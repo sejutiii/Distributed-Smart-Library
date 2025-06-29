@@ -10,7 +10,7 @@ import os
 load_dotenv()
 LOAN_SERVICE_URL = os.getenv("LOAN_SERVICE_URL")
 
-router = APIRouter(prefix="/api/users", tags=["Users"])
+router = APIRouter(tags=["Users"])
 
 @router.post("/", response_model=UserResponse, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):

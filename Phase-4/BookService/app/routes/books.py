@@ -5,7 +5,7 @@ from app.database import get_db
 from app.models.book import Book
 from app.schemas.book import BookCreate, BookResponse, BookAvailabilityUpdate, BookSearchResponse
 
-router = APIRouter(prefix="/api/books", tags=["Books"])
+router = APIRouter(tags=["Books"])
 
 @router.post("/", response_model=BookResponse, status_code=201)
 def create_book(book: BookCreate, db: Session = Depends(get_db)):
