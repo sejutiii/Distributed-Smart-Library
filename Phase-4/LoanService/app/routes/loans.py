@@ -14,7 +14,7 @@ load_dotenv()
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
 BOOK_SERVICE_URL = os.getenv("BOOK_SERVICE_URL")
 
-router = APIRouter(tags=["Loans"])
+router = APIRouter(prefix="/api", tags=["Loans"])
 
 async def get_user(user_id: int):
     async with httpx.AsyncClient(timeout=5.0) as client:

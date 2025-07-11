@@ -4,8 +4,5 @@ from app.database import Base, engine
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-            title="Loan Service", 
-            root_path="/api/loans"
-            )
+app = FastAPI(title="Loan Service")
 app.include_router(loans.router)

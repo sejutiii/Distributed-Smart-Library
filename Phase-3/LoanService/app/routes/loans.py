@@ -14,12 +14,13 @@ load_dotenv()
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
 BOOK_SERVICE_URL = os.getenv("BOOK_SERVICE_URL")
 
-router = APIRouter(tags=["Loans"])
+router = APIRouter()
 
 async def get_user(user_id: int):
     async with httpx.AsyncClient(timeout=5.0) as client:
         try:
-            response = await client.get(f"{USER_SERVICE_URL}/api/users/{user_id}")
+            url= f"{USER_SERVICE_URL}/api/users/{user_id}"
+            response = await client.get(url)
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as e:
@@ -56,7 +57,7 @@ async def update_book_availability(book_id: int, available_copies: int, operatio
         except httpx.RequestError:
             raise HTTPException(status_code=503, detail="Book Service unavailable")
 
-@router.post("/loans", response_model=LoanResponse, status_code=201)
+@router.post("/", response_model=LoanResponse, status_code=201)
 async def issue_book(loan: LoanCreate, db: Session = Depends(get_db)):
     # Validate user
     user = await get_user(loan.user_id)
@@ -90,7 +91,7 @@ async def return_book(return_data: LoanReturn, db: Session = Depends(get_db)):
     db.refresh(loan)
     return loan
 
-@router.get("/loans/user/{user_id}", response_model=LoanHistoryResponse)
+@router.get("/user/{user_id}", response_model=LoanHistoryResponse)
 async def get_user_loans(user_id: int, db: Session = Depends(get_db)):
     user = await get_user(user_id)
     loans = db.query(Loan).filter(Loan.user_id == user_id).all()
@@ -108,7 +109,7 @@ async def get_user_loans(user_id: int, db: Session = Depends(get_db)):
         ))
     return {"loans": loan_details, "total": len(loan_details)}
 
-@router.get("/loans/stats", tags=["Loans"])
+@router.get("/stats")
 def get_loan_stats(db: Session = Depends(get_db)):
     total_loans = db.query(Loan).count()
     active_loans = db.query(Loan).filter(Loan.status == LoanStatus.ACTIVE).count()
@@ -116,14 +117,14 @@ def get_loan_stats(db: Session = Depends(get_db)):
     return {"total_loans": total_loans, "active_loans": active_loans, "due_today": due_today}
 
 
-@router.get("/loans/active-users", tags=["Loans"])
+@router.get("/active-users")
 def get_active_users(db: Session = Depends(get_db)):
     active_users = db.query(func.count(func.distinct(Loan.user_id))).filter(Loan.status == LoanStatus.ACTIVE).scalar() or 0
     return {"active_users": active_users}
 
 
 
-@router.get("/loans/{id}", response_model=LoanDetailResponse)
+@router.get("/{id}", response_model=LoanDetailResponse)
 async def get_loan(id: int, db: Session = Depends(get_db)):
     loan = db.query(Loan).filter(Loan.id == id).first()
     if not loan:
