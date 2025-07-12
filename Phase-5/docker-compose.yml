@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  users:
+    build:
+      context: ./UserService
+      dockerfile: Dockerfile
+    image: user-service:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgresql://postgres:2025@192.168.0.102/user_db
+    networks:
+      - smart-library-network
+
+  loans:
+    build:
+      context: ./LoanService
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - DATABASE_URL=postgresql://postgres:2025@192.168.0.102/loan_db
+      - USER_SERVICE_URL=http://users:8081
+      - BOOK_SERVICE_URL=http://books:8082
+    depends_on:
+      - users
+      - books
+    networks:
+      - smart-library-network
+
+  books:
+    build:
+      context: ./BookService
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - DATABASE_URL=postgresql://postgres:2025@192.168.0.102/book_db
+    networks:
+      - smart-library-network
+
+networks:
+  smart-library-network:
+    driver: bridge
